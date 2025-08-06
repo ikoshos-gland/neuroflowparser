@@ -95,6 +95,11 @@ class RAGInterface:
                 self.pipeline = JinaV4Pipeline(config, downloads_dir=str(self.downloads_dir))
                 self.pipeline.load_pipeline(str(self.pipeline_dir))
                 console.print("[green]Pipeline loaded successfully![/green]")
+                
+                # Check if pipeline is empty and needs to be rebuilt
+                if len(self.pipeline.vector_store.documents) == 0:
+                    console.print("[yellow]Pipeline is empty. Processing documents...[/yellow]")
+                    self._process_documents_and_rebuild()
             else:
                 # Create new pipeline
                 console.print("[yellow]No existing pipeline found. Creating new pipeline...[/yellow]")
@@ -118,6 +123,16 @@ class RAGInterface:
             # Initialize pipeline
             self.pipeline = JinaV4Pipeline(config, downloads_dir=str(self.downloads_dir))
             
+            # Process documents and build index
+            self._process_documents_and_rebuild()
+            
+        except Exception as e:
+            console.print(f"[red]Failed to create pipeline: {e}[/red]")
+            raise
+    
+    def _process_documents_and_rebuild(self):
+        """Process documents and rebuild the pipeline index"""
+        try:
             # Process documents
             with Progress(
                 SpinnerColumn(),
@@ -148,10 +163,10 @@ class RAGInterface:
                 progress.update(task, description="Saving pipeline...")
                 self.pipeline.save_pipeline(str(self.pipeline_dir))
             
-            console.print(f"[green]New pipeline created with {len(chunks)} document chunks![/green]")
+            console.print(f"[green]Pipeline processed {len(chunks)} document chunks successfully![/green]")
             
         except Exception as e:
-            console.print(f"[red]Failed to create pipeline: {e}[/red]")
+            console.print(f"[red]Failed to rebuild pipeline: {e}[/red]")
             raise
     
     def query(self, 

@@ -444,8 +444,16 @@ class VectorStore:
             if self.store_type == "faiss":
                 faiss.write_index(self.index, f"{filepath}.faiss")
                 
-                # Save document metadata
-                doc_metadata = [asdict(doc) for doc in self.documents]
+                # Save document metadata - convert numpy arrays to lists for JSON serialization
+                doc_metadata = []
+                for doc in self.documents:
+                    doc_dict = asdict(doc)
+                    # Convert numpy arrays to lists for JSON serialization
+                    if doc_dict.get('embedding') is not None:
+                        doc_dict['embedding'] = doc_dict['embedding'].tolist()
+                    if doc_dict.get('multi_vector_embedding') is not None:
+                        doc_dict['multi_vector_embedding'] = doc_dict['multi_vector_embedding'].tolist()
+                    doc_metadata.append(doc_dict)
                 with open(f"{filepath}_metadata.json", "w") as f:
                     json.dump({
                         "documents": doc_metadata,
@@ -470,19 +478,32 @@ class VectorStore:
         """Load vector index from disk"""
         try:
             if self.store_type == "faiss":
-                self.index = faiss.read_index(f"{filepath}.faiss")
+                faiss_file = f"{filepath}.faiss"
+                metadata_file = f"{filepath}_metadata.json"
+                
+                # Check if files exist
+                if not os.path.exists(faiss_file):
+                    logger.warning(f"FAISS index file not found: {faiss_file}")
+                    return
+                if not os.path.exists(metadata_file):
+                    logger.warning(f"Metadata file not found: {metadata_file}")
+                    return
+                
+                self.index = faiss.read_index(faiss_file)
                 
                 # Load document metadata
-                with open(f"{filepath}_metadata.json", "r") as f:
+                with open(metadata_file, "r") as f:
                     data = json.load(f)
                 
                 self.documents = []
                 self.document_index = {}
                 
                 for doc_data in data["documents"]:
-                    # Convert embedding back to numpy array
+                    # Convert embeddings back to numpy arrays
                     if doc_data.get("embedding"):
                         doc_data["embedding"] = np.array(doc_data["embedding"])
+                    if doc_data.get("multi_vector_embedding"):
+                        doc_data["multi_vector_embedding"] = np.array(doc_data["multi_vector_embedding"])
                     
                     doc = DocumentChunk(**doc_data)
                     self.documents.append(doc)
