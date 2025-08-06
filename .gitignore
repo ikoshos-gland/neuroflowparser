@@ -1,0 +1,100 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+*.out
+
+# Cache directories
+cache/
+.cache/
+processed/
+extracted/
+saved_pipeline/
+
+# Model files (too large for git)
+*.bin
+*.safetensors
+models/
+checkpoints/
+
+# Environment variables
+.env
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# spaCy models (downloaded separately)
+*.tar.gz
+
+# NLTK data
+nltk_data/
+
+# Test outputs
+test_output/
+output/
+
+# Documentation builds
+docs/_build/
+site/
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Vector stores
+*.faiss
+*.index
+*_metadata.json
+
+# Large PDF processing outputs
+extracted/
+processed_data/
