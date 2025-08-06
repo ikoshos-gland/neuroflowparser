@@ -275,46 +275,46 @@ result = interface.query("query", use_cache=True)  # Enable caching
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Jina v4 RAG Pipeline                    │
+│                    Jina v4 RAG Pipeline                     │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  ┌─────────────┐    ┌──────────────┐    ┌──────────────┐   │
-│  │ PDF Files   │───▶│ PDF Processor│───▶│ Document     │   │
-│  │ (Downloads) │    │              │    │ Chunks       │   │
-│  └─────────────┘    └──────────────┘    └──────────────┘   │
+│  ┌─────────────┐    ┌──────────────┐    ┌──────────────┐    │
+│  │ PDF Files   │───▶│ PDF Processor│───▶│ Document    │    │
+│  │ (Downloads) │    │              │    │ Chunks       │    │
+│  └─────────────┘    └──────────────┘    └──────────────┘    │
 │                            │                     │          │
 │                            ▼                     ▼          │
-│  ┌─────────────┐    ┌──────────────┐    ┌──────────────┐   │
-│  │ Images/OCR  │    │ Tables       │    │ Text Chunks  │   │
-│  │ Extraction  │    │ Extraction   │    │ w/ Overlap   │   │
-│  └─────────────┘    └──────────────┘    └──────────────┘   │
+│  ┌─────────────┐    ┌──────────────┐    ┌──────────────┐    │
+│  │ Images/OCR  │    │ Tables       │    │ Text Chunks  │    │
+│  │ Extraction  │    │ Extraction   │    │ w/ Overlap   │    │
+│  └─────────────┘    └──────────────┘    └──────────────┘    │
 │                            │                     │          │
 │                            ▼                     ▼          │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │           Jina v4 Embedder (3.8B Parameters)          │ │
-│  │  • Multimodal (Text + Image)                           │ │
-│  │  • Task-Specific Adapters                              │ │
-│  │  • Multi-Vector Support                                │ │
-│  │  • 29+ Languages                                       │ │
-│  └─────────────────────────────────────────────────────────┘ │
-│                            │                                 │
-│                            ▼                                 │
-│  ┌─────────────────────────────────────────────────────────┐ │
-│  │              Vector Store (FAISS/ChromaDB)             │ │
-│  │  • Cosine Similarity Search                            │ │
-│  │  • Metadata Filtering                                  │ │
-│  │  • Scalable Indexing                                   │ │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │           Jina v4 Embedder (3.8B Parameters)            ││
+│  │  • Multimodal (Text + Image)                            ││
+│  │  • Task-Specific Adapters                               ││
+│  │  • Multi-Vector Support                                 ││
+│  │  • 29+ Languages                                        ││
+│  └─────────────────────────────────────────────────────────┘│
+│                            │                                │
+│                            ▼                                │
+│  ┌─────────────────────────────────────────────────────────┐│
+│  │              Vector Store (FAISS/ChromaDB)              │ │
+│  │  • Cosine Similarity Search                             │ │
+│  │  • Metadata Filtering                                   │ │
+│  │  • Scalable Indexing                                    │ │
 │  └─────────────────────────────────────────────────────────┘ │
 │                            │                                 │
 │                            ▼                                 │
 │  ┌─────────────────────────────────────────────────────────┐ │
 │  │                RAG Interface                            │ │
-│  │  • Interactive CLI                                     │ │
-│  │  • REST API                                           │ │
-│  │  • Query Analytics                                    │ │
-│  │  • Result Explanation                                 │ │
+│  │  • Interactive CLI                                      │ │
+│  │  • REST API                                             │ │
+│  │  • Query Analytics                                      │ │
+│  │  • Result Explanation                                   │ │
 │  └─────────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
+└──────────────────────────────────────────────────────────────┘
 ```
 
 ## Troubleshooting
