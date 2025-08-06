@@ -87,25 +87,24 @@ class ImageExtractor:
                         continue
                     
                     # Convert to PIL Image with proper handling of color spaces and alpha
-                    if pix.n - pix.alpha < 4:  # GRAY or RGB
-                        # Handle alpha channel
-                        if pix.alpha:
-                            # Remove alpha channel by converting to RGB
-                            pix = fitz.Pixmap(fitz.csRGB, pix)
-                        
-                        # Convert to bytes
-                        if pix.n == 1:  # Grayscale
-                            img_data = pix.tobytes("ppm")
-                        else:  # RGB
-                            img_data = pix.tobytes("ppm")
-                        
-                        pil_img = Image.open(io.BytesIO(img_data))
-                    else:  # CMYK or other complex color spaces
-                        # Convert to RGB first
+                    # Always ensure we have no alpha channel by converting to RGB
+                    if pix.alpha or pix.n > 3:
+                        # Convert to RGB colorspace without alpha
                         pix_rgb = fitz.Pixmap(fitz.csRGB, pix)
-                        img_data = pix_rgb.tobytes("ppm")
+                        pix = None  # Clean up original
+                        pix = pix_rgb
+                    
+                    # Use PNG format which is more robust than PPM
+                    try:
+                        img_data = pix.tobytes("png")
                         pil_img = Image.open(io.BytesIO(img_data))
-                        pix_rgb = None  # Clean up
+                    except Exception:
+                        # Fallback: convert to raw bytes and create PIL image directly
+                        img_data = pix.samples
+                        if pix.n == 1:  # Grayscale
+                            pil_img = Image.frombuffer("L", (pix.width, pix.height), img_data, "raw", "L", 0, 1)
+                        else:  # RGB
+                            pil_img = Image.frombuffer("RGB", (pix.width, pix.height), img_data, "raw", "RGB", 0, 1)
                     
                     # Ensure image is in RGB mode for consistent saving
                     if pil_img.mode not in ['RGB', 'L']:

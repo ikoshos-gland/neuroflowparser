@@ -131,16 +131,31 @@ class JinaV4Embedder:
                 except:
                     languages.append("en")  # default to English
             
-            # Encode with task-specific adapter
+            # Prepare parameters for Jina v4 model using correct method signature
+            model_kwargs = {
+                'task': self.config.task_type,
+                'max_length': self.config.max_length,
+                'batch_size': self.config.batch_size,
+                'return_numpy': True,
+            }
+            
+            # Add only supported kwargs based on actual signature
+            supported_kwargs = ['task', 'max_length', 'batch_size', 'return_multivector', 'return_numpy', 'truncate_dim', 'prompt_name']
+            for key, value in kwargs.items():
+                if key in supported_kwargs:
+                    model_kwargs[key] = value
+            
+            # Encode with task-specific adapter using correct method
             embeddings = self.model.encode_text(
-                texts=texts,
-                task=self.config.task_type,
-                max_length=self.config.max_length,
-                batch_size=self.config.batch_size,
-                show_progress_bar=True,
-                convert_to_numpy=True,
-                **kwargs
+                texts,
+                **model_kwargs
             )
+            
+            # Convert to numpy if needed (should already be numpy with return_numpy=True)
+            if hasattr(embeddings, 'numpy'):
+                embeddings = embeddings.numpy()
+            elif not isinstance(embeddings, np.ndarray):
+                embeddings = np.array(embeddings)
             
             # Truncate dimensions if specified
             truncate_dim = kwargs.get('truncate_dim')
@@ -166,24 +181,45 @@ class JinaV4Embedder:
             numpy array of image embeddings
         """
         try:
-            # Process images
+            # Process images - Jina v4 can handle both paths and PIL Images directly
             processed_images = []
             for img in images:
                 if isinstance(img, str):
-                    # Load from path
-                    processed_images.append(Image.open(img).convert("RGB"))
+                    # Keep as path - Jina v4 can handle URLs and paths directly
+                    processed_images.append(img)
                 else:
+                    # PIL Image - Jina v4 can handle this too
                     processed_images.append(img)
             
-            # Encode images with multimodal model
+            # Prepare parameters for image encoding using correct signature
+            model_kwargs = {
+                'task': self.config.task_type,
+                'batch_size': self.config.batch_size,
+                'return_numpy': True,
+            }
+            
+            # Add only supported kwargs based on actual signature
+            supported_kwargs = ['task', 'batch_size', 'return_multivector', 'return_numpy', 'truncate_dim', 'max_pixels']
+            for key, value in kwargs.items():
+                if key in supported_kwargs:
+                    model_kwargs[key] = value
+            
+            # Encode images with multimodal model using correct method
             embeddings = self.model.encode_image(
-                images=processed_images,
-                task=self.config.task_type,
-                batch_size=self.config.batch_size,
-                show_progress_bar=True,
-                convert_to_numpy=True,
-                **kwargs
+                processed_images,
+                **model_kwargs
             )
+            
+            # Convert to numpy if needed (should already be numpy with return_numpy=True)
+            if hasattr(embeddings, 'numpy'):
+                embeddings = embeddings.numpy()
+            elif not isinstance(embeddings, np.ndarray):
+                embeddings = np.array(embeddings)
+            
+            # Truncate dimensions if specified
+            truncate_dim = kwargs.get('truncate_dim')
+            if truncate_dim and truncate_dim < self.config.embedding_dim:
+                embeddings = embeddings[:, :truncate_dim]
             
             logger.info(f"Encoded {len(images)} images with shape: {embeddings.shape}")
             return embeddings
@@ -224,23 +260,41 @@ class JinaV4Embedder:
             List of multi-vector embeddings per text
         """
         try:
+            # Prepare parameters for multi-vector encoding
+            model_kwargs = {
+                'task': self.config.task_type,
+                'max_length': self.config.max_length,
+                'batch_size': self.config.batch_size,
+                'return_multivector': True,
+                'return_numpy': True,
+            }
+            
+            # Add only supported kwargs
+            supported_kwargs = ['task', 'max_length', 'batch_size', 'return_multivector', 'return_numpy', 'truncate_dim', 'prompt_name']
+            for key, value in kwargs.items():
+                if key in supported_kwargs:
+                    model_kwargs[key] = value
+            
             # Enable multi-vector output
             embeddings = self.model.encode_text(
-                texts=texts,
-                task=self.config.task_type,
-                output_type="multi",
-                max_length=self.config.max_length,
-                batch_size=self.config.batch_size,
-                show_progress_bar=True,
-                **kwargs
+                texts,
+                **model_kwargs
             )
+            
+            # Convert to numpy if needed
+            if hasattr(embeddings, 'numpy'):
+                embeddings = embeddings.numpy()
+            elif not isinstance(embeddings, np.ndarray):
+                embeddings = np.array(embeddings)
             
             logger.info(f"Generated multi-vector embeddings for {len(texts)} texts")
             return embeddings
             
         except Exception as e:
             logger.error(f"Failed to generate multi-vector embeddings: {e}")
-            raise
+            # Fallback to regular embeddings
+            logger.warning("Falling back to single-vector embeddings")
+            return self.encode_text(texts, **kwargs)
 
 class VectorStore:
     """Advanced vector storage and retrieval system"""
